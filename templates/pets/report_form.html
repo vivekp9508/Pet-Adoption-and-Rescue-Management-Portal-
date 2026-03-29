@@ -2,69 +2,87 @@
 {% block title %}Report a Pet — Pet Rescue{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:560px; margin:0 auto;">
-    <h2>Report a Lost / Found Pet</h2>
-
-    <div class="alert alert-error" id="error-msg"></div>
-    <div class="alert alert-success" id="success-msg"></div>
-
-    <div class="form-group">
-        <label>Report Type</label>
-        <select id="report_type">
-            <option value="lost">Lost Pet</option>
-            <option value="found">Found Pet</option>
-        </select>
-    </div>
-    <div class="form-group">
-        <label>Pet Type</label>
-        <select id="pet_type" onchange="toggleOtherField()">
-            <option value="dog">Dog</option>
-            <option value="cat">Cat</option>
-            <option value="bird">Bird</option>
-            <option value="other">Other</option>
-        </select>
+<div style="max-width:600px; margin:0 auto;">
+    <div style="margin-bottom:1.5rem;">
+        <h2 style="margin-bottom:0.25rem;">Report a pet</h2>
+        <p style="color:var(--warm-gray-2); font-size:0.9rem;">Fill in as many details as possible to help with matching.</p>
     </div>
 
-    <!-- Shows only when Other is selected -->
-    <div class="form-group" id="other-pet-group" style="display:none;">
-        <label>Please Specify Pet Type</label>
-        <input type="text" id="other_pet_type" placeholder="e.g. Rabbit, Turtle, Hamster" oninput="clearError('other-pet-error')">
-        <small class="field-error" id="other-pet-error"></small>
-    </div>
+    <div class="card">
+        <div class="alert alert-error" id="error-msg"></div>
+        <div class="alert alert-success" id="success-msg"></div>
 
-    <div class="form-group">
-        <label>Breed (optional)</label>
-        <input type="text" id="breed" placeholder="e.g. Labrador">
-    </div>
-    <div class="form-group">
-        <label>Color</label>
-        <input type="text" id="color" placeholder="e.g. Brown and white" oninput="clearError('color-error')">
-        <small class="field-error" id="color-error"></small>
-    </div>
-    <div class="form-group">
-        <label>Location</label>
-        <input type="text" id="location" placeholder="e.g. Near Green Park, Delhi" oninput="clearError('location-error')">
-        <small class="field-error" id="location-error"></small>
-    </div>
-    <div class="form-group">
-        <label>Description (optional)</label>
-        <textarea id="description" rows="3" placeholder="Any extra details..."></textarea>
-    </div>
-    <div class="form-group">
-        <label>Contact Info</label>
-        <select id="contact_type" onchange="updateContactPlaceholder()" style="margin-bottom:0.5rem">
-            <option value="phone">Phone Number</option>
-            <option value="email">Email</option>
-        </select>
-        <input type="text" id="contact_info" placeholder="Enter 10 digit phone number" oninput="clearError('contact-error')">
-        <small class="field-error" id="contact-error"></small>
-    </div>
-    <div class="form-group">
-        <label>Photo (optional)</label>
-        <input type="file" id="image" accept="image/*">
-    </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Report Type</label>
+                <select id="report_type">
+                    <option value="lost">🔴 Lost Pet</option>
+                    <option value="found">🟢 Found Pet</option>
+                </select>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Pet Type</label>
+                <select id="pet_type" onchange="toggleOtherField()">
+                    <option value="dog">🐕 Dog</option>
+                    <option value="cat">🐈 Cat</option>
+                    <option value="bird">🐦 Bird</option>
+                    <option value="other">🐾 Other</option>
+                </select>
+            </div>
+        </div>
 
-    <button class="btn btn-primary" onclick="submitReport()" style="width:100%">Submit Report</button>
+        <div class="form-group" id="other-pet-group" style="display:none; margin-top:0.9rem;">
+            <label>Please specify pet type</label>
+            <input type="text" id="other_pet_type" placeholder="e.g. Rabbit, Turtle, Hamster" oninput="clearError('other-pet-error')">
+            <small class="field-error" id="other-pet-error"></small>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem; margin-top:0.9rem;">
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Breed <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
+                <input type="text" id="breed" placeholder="e.g. Labrador">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+                <label>Color</label>
+                <input type="text" id="color" placeholder="e.g. Brown and white" oninput="clearError('color-error')">
+                <small class="field-error" id="color-error"></small>
+            </div>
+        </div>
+
+        <div class="form-group" style="margin-top:0.9rem;">
+            <label>Location</label>
+            <input type="text" id="location" placeholder="e.g. Near Central Park, Delhi" oninput="clearError('location-error')">
+            <small class="field-error" id="location-error"></small>
+        </div>
+
+        <div class="form-group">
+            <label>Description <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
+            <textarea id="description" rows="3" placeholder="Any extra details that might help identify the pet..."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Contact Info</label>
+            <div style="display:flex; gap:0.6rem;">
+                <select id="contact_type" onchange="updateContactPlaceholder()" style="width:160px; flex-shrink:0;">
+                    <option value="phone">📞 Phone</option>
+                    <option value="email">✉️ Email</option>
+                </select>
+                <div style="flex:1;">
+                    <input type="text" id="contact_info" placeholder="Enter 10-digit phone number" oninput="clearError('contact-error')">
+                </div>
+            </div>
+            <small class="field-error" id="contact-error"></small>
+        </div>
+
+        <div class="form-group">
+            <label>Photo <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
+            <input type="file" id="image" accept="image/*" style="font-size:0.85rem;">
+        </div>
+
+        <button class="btn btn-primary" onclick="submitReport()" style="width:100%; padding:0.75rem; font-size:0.95rem;">
+            Submit Report →
+        </button>
+    </div>
 </div>
 {% endblock %}
 
@@ -88,98 +106,46 @@ function updateContactPlaceholder() {
     input.placeholder = type === 'phone' ? 'Enter 10-digit phone number' : 'Enter email address';
 }
 
-function clearError(id) {
-    document.getElementById(id).textContent = '';
-}
-
-function showFieldError(id, msg) {
-    document.getElementById(id).textContent = msg;
-}
+function clearError(id) { document.getElementById(id).textContent = ''; }
 
 function validateForm() {
     let valid = true;
-
-    // Other pet type
     const petType = document.getElementById('pet_type').value;
+
     if (petType === 'other') {
         const otherVal = document.getElementById('other_pet_type').value.trim();
-        if (!otherVal) {
-            showFieldError('other-pet-error', 'Please specify the pet type.');
-            valid = false;
-        }
+        if (!otherVal) { document.getElementById('other-pet-error').textContent = 'Please specify the pet type.'; valid = false; }
     }
 
-    // Color
     const color = document.getElementById('color').value.trim();
-    if (!color) {
-        showFieldError('color-error', 'Color is required.');
-        valid = false;
-    }
+    if (!color) { document.getElementById('color-error').textContent = 'Color is required.'; valid = false; }
 
-    // Location
     const location = document.getElementById('location').value.trim();
-    if (!location) {
-        showFieldError('location-error', 'Location is required.');
-        valid = false;
-    }
+    if (!location) { document.getElementById('location-error').textContent = 'Location is required.'; valid = false; }
 
-    // Contact info
     const contactType = document.getElementById('contact_type').value;
     const contactInfo = document.getElementById('contact_info').value.trim();
 
     if (!contactInfo) {
-        showFieldError('contact-error', 'Contact info is required.');
-        valid = false;
-    } else if (contactType === 'phone') {
-        if (!/^\d{10}$/.test(contactInfo)) {
-            showFieldError('contact-error', 'Phone number must be exactly 10 digits.');
-            valid = false;
-        }
-    } else if (contactType === 'email') {
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo)) {
-            showFieldError('contact-error', 'Enter a valid email address.');
-            valid = false;
-        }
+        document.getElementById('contact-error').textContent = 'Contact info is required.'; valid = false;
+    } else if (contactType === 'phone' && !/^\d{10}$/.test(contactInfo)) {
+        document.getElementById('contact-error').textContent = 'Phone must be exactly 10 digits.'; valid = false;
+    } else if (contactType === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(contactInfo)) {
+        document.getElementById('contact-error').textContent = 'Enter a valid email address.'; valid = false;
     }
 
     return valid;
 }
 
-async function refreshAccessToken() {
-    const refresh = localStorage.getItem('refresh_token');
-    if (!refresh) return null;
-
-    const res = await fetch('/users/api/token/refresh/', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh })
-    });
-
-    if (res.ok) {
-        const data = await res.json();
-        localStorage.setItem('access_token', data.access);
-        return data.access;
-    }
-    return null;
-}
-
 async function submitReport() {
     document.getElementById('error-msg').style.display = 'none';
     document.getElementById('success-msg').style.display = 'none';
-
     if (!validateForm()) return;
 
     let token = getToken();
-    if (!token) {
-        window.location.href = '/users/login/';
-        return;
-    }
+    if (!token) { window.location.replace('/users/login/'); return; }
 
     const petType = document.getElementById('pet_type').value;
-    const finalPetType = petType === 'other'
-        ? document.getElementById('other_pet_type').value.trim()
-        : petType;
-
     const formData = new FormData();
     formData.append('report_type', document.getElementById('report_type').value);
     formData.append('pet_type', petType);
@@ -188,7 +154,6 @@ async function submitReport() {
     formData.append('location', document.getElementById('location').value.trim());
     formData.append('description', document.getElementById('description').value.trim());
     formData.append('contact_info', document.getElementById('contact_info').value.trim());
-
     const imageFile = document.getElementById('image').files[0];
     if (imageFile) formData.append('image', imageFile);
 
@@ -198,13 +163,9 @@ async function submitReport() {
         body: formData
     });
 
-    // If token expired, try refreshing once
     if (res.status === 401) {
         token = await refreshAccessToken();
-        if (!token) {
-            window.location.href = '/users/login/';
-            return;
-        }
+        if (!token) { window.location.replace('/users/login/'); return; }
         res = await fetch('/pets/api/reports/create/', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token },
@@ -218,14 +179,14 @@ async function submitReport() {
         const el = document.getElementById('success-msg');
         el.style.display = 'block';
         let seconds = 6;
-        el.textContent = `Request submitted! Waiting for admin approval. Redirecting in ${seconds}s...`;
+        el.textContent = `Report submitted! Waiting for admin approval. Redirecting in ${seconds}s...`;
         const countdown = setInterval(() => {
             seconds--;
             if (seconds <= 0) {
                 clearInterval(countdown);
-                window.location.href = '/pets/my-reports/';
+                window.location.replace('/pets/my-reports/');
             } else {
-                el.textContent = `Request submitted! Waiting for admin approval. Redirecting in ${seconds}s...`;
+                el.textContent = `Report submitted! Waiting for admin approval. Redirecting in ${seconds}s...`;
             }
         }, 1000);
     } else {

@@ -5,33 +5,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}Pet Rescue{% endblock %}</title>
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=4">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;1,9..144,400&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
 </head>
 <body>
     <nav class="navbar">
-        <a href="/pets/list/" class="nav-brand"><span>🐾</span> Pet Rescue</a>
+        <a href="/pets/list/" class="nav-brand">🐾 Pet Rescue</a>
         <div class="nav-links">
-            <a href="/pets/list/">Browse Pets</a>
-            <a href="/pets/search/" id="nav-search" style="display:none">🔍 Search</a>
-            <a href="/pets/report/" id="nav-report" style="display:none">+ Report</a>
-            <a href="/pets/my-reports/" id="nav-my-reports" style="display:none">My Reports</a>
+            <a href="/pets/list/" class="nav-link">Browse</a>
+            <a href="/pets/search/" class="nav-link" id="nav-search" style="display:none">Search</a>
+            <a href="/pets/my-reports/" class="nav-link" id="nav-my-reports" style="display:none">My Reports</a>
 
             <!-- Notification Bell (users) -->
             <div class="notif-wrapper" id="nav-notif-wrapper" style="display:none">
-                <a class="notif-bell" onclick="toggleNotifDropdown()" id="nav-notif-bell">
+                <button class="notif-bell-btn" onclick="toggleNotifDropdown()">
                     🔔
                     <span class="notif-count" id="notif-count"></span>
-                </a>
+                </button>
                 <div class="notif-dropdown" id="notif-dropdown">
-                    <div class="notif-dropdown-header">🔔 Notifications</div>
+                    <div class="notif-dropdown-header">Notifications</div>
                     <div id="notif-list"><div class="notif-item">Loading...</div></div>
                 </div>
             </div>
 
             <span class="nav-user" id="nav-user" style="display:none"></span>
-            <a href="javascript:void(0)" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
-            <a href="/users/login/" id="nav-login">Login</a>
-            <a href="/users/register/" id="nav-register">Register</a>
+            <a href="/pets/report/" class="nav-cta-btn" id="nav-report" style="display:none">+ Report</a>
+            <a href="javascript:void(0)" class="nav-link" id="nav-logout" style="display:none" onclick="logout()">Logout</a>
+            <a href="/users/login/" class="nav-link" id="nav-login">Login</a>
+            <a href="/users/register/" class="nav-cta-btn" id="nav-register">Register</a>
         </div>
     </nav>
 
@@ -39,7 +40,7 @@
         {% block content %}{% endblock %}
     </div>
 
-    <script src="{% static 'js/main.js' %}?v=4"></script>
+    <script src="{% static 'js/main.js' %}?v=5"></script>
     {% block extra_js %}{% endblock %}
 </body>
 </html>

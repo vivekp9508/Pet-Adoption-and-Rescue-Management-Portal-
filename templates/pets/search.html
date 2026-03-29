@@ -3,55 +3,55 @@
 
 {% block content %}
 <div class="search-hero">
-    <h2>🔍 Find Your Lost Pet</h2>
-    <p>Enter your lost pet's details below — we'll search through all found pet reports and show you the closest matches.</p>
+    <h2>🔍 Find your lost pet</h2>
+    <p>Enter your lost pet's details — we'll search through all found reports and show you the closest matches.</p>
 </div>
 
 <div class="card">
-    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
-        <div class="form-group">
+    <div class="alert alert-error" id="error-msg"></div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.9rem;">
+        <div class="form-group" style="margin-bottom:0;">
             <label>Pet Type *</label>
             <select id="pet_type">
-                <option value="">Select pet type</option>
-                <option value="dog">Dog</option>
-                <option value="cat">Cat</option>
-                <option value="bird">Bird</option>
-                <option value="other">Other</option>
+                <option value="">Select type...</option>
+                <option value="dog">🐕 Dog</option>
+                <option value="cat">🐈 Cat</option>
+                <option value="bird">🐦 Bird</option>
+                <option value="other">🐾 Other</option>
             </select>
         </div>
-        <div class="form-group">
-            <label>Breed (optional)</label>
+        <div class="form-group" style="margin-bottom:0;">
+            <label>Breed <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
             <input type="text" id="breed" placeholder="e.g. Labrador">
         </div>
-        <div class="form-group">
-            <label>Color (optional)</label>
+        <div class="form-group" style="margin-bottom:0;">
+            <label>Color <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
             <input type="text" id="color" placeholder="e.g. Brown and white">
         </div>
-        <div class="form-group">
-            <label>Last Seen Location (optional)</label>
+        <div class="form-group" style="margin-bottom:0;">
+            <label>Last seen location <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
             <input type="text" id="location" placeholder="e.g. Central Park, Delhi">
         </div>
     </div>
-    <div class="alert alert-error" id="error-msg"></div>
-    <button class="btn btn-primary" onclick="searchPets()" style="width:100%">🔍 Search for Matches</button>
+    <button class="btn btn-primary" onclick="searchPets()" style="width:100%; margin-top:1.25rem; padding:0.75rem;">
+        Search for Matches →
+    </button>
 </div>
 
-<!-- Results -->
-<div id="results-section" style="display:none">
+<div id="results-section" style="display:none;">
     <div class="page-header">
-        <h2>Search Results</h2>
-        <span id="results-count" style="color:var(--text-light); font-size:0.9rem;"></span>
+        <h2 style="margin-bottom:0;">Search Results</h2>
+        <span id="results-count" style="color:var(--warm-gray-2); font-size:0.88rem;"></span>
     </div>
     <div class="pet-grid" id="results-grid"></div>
 </div>
 
-<!-- No results -->
-<div id="no-results" style="display:none">
+<div id="no-results" style="display:none;">
     <div class="card empty-state">
-        <div class="empty-icon">😔</div>
-        <p>No matching found pet reports yet.</p>
-        <p style="font-size:0.9rem; color:var(--text-light);">Don't worry — new reports come in regularly. You can also submit a lost pet report so others can contact you.</p>
-        <a href="/pets/report/" class="btn btn-primary" style="margin-top:1rem; display:inline-block;">Submit Lost Pet Report</a>
+        <span class="empty-icon">😔</span>
+        <p style="font-weight:500;">No matching found pet reports yet.</p>
+        <p>New reports come in regularly. You can also submit a lost pet report so others can contact you.</p>
+        <a href="/pets/report/" class="btn btn-primary" style="margin-top:1rem;">Submit Lost Pet Report</a>
     </div>
 </div>
 {% endblock %}
@@ -60,7 +60,7 @@
 <script>
 async function searchPets() {
     const token = getToken();
-    if (!token) { window.location.href = '/users/login/'; return; }
+    if (!token) { window.location.replace('/users/login/'); return; }
 
     const petType = document.getElementById('pet_type').value;
     const errorEl = document.getElementById('error-msg');
@@ -81,13 +81,11 @@ async function searchPets() {
     if (color) url += `&color=${encodeURIComponent(color)}`;
     if (location) url += `&location=${encodeURIComponent(location)}`;
 
-    let res = await fetch(url, {
-        headers: { 'Authorization': 'Bearer ' + token }
-    });
+    let res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + token } });
 
     if (res.status === 401) {
         const newToken = await refreshAccessToken();
-        if (!newToken) { window.location.href = '/users/login/'; return; }
+        if (!newToken) { window.location.replace('/users/login/'); return; }
         res = await fetch(url, { headers: { 'Authorization': 'Bearer ' + newToken } });
     }
 
@@ -104,7 +102,6 @@ async function searchPets() {
 
     document.getElementById('results-count').textContent = `${results.length} match(es) found`;
     document.getElementById('results-section').style.display = 'block';
-
     document.getElementById('results-grid').innerHTML = results.map(r => `
         <div class="pet-card">
             ${r.image_url
@@ -112,15 +109,12 @@ async function searchPets() {
                 : `<div class="pet-card-no-img">🐾</div>`
             }
             <div class="pet-card-body">
-                <div style="display:flex; gap:0.4rem; flex-wrap:wrap; margin-bottom:0.5rem;">
-                    <span class="badge badge-found">FOUND</span>
-                    <span class="badge badge-${r.pet_type === 'dog' ? 'accepted' : r.pet_type === 'cat' ? 'pending' : 'other'}">${r.pet_type}</span>
-                </div>
+                <span class="badge badge-found">FOUND</span>
                 <h3>${r.pet_type.charAt(0).toUpperCase() + r.pet_type.slice(1)} ${r.breed ? '· ' + r.breed : ''}</h3>
                 <p>🎨 ${r.color}</p>
                 <p>📍 ${r.location}</p>
                 <p>📞 ${r.contact_info}</p>
-                ${r.description ? `<p style="margin-top:0.4rem; font-size:0.85rem; color:var(--text-light);">${r.description}</p>` : ''}
+                ${r.description ? `<p style="margin-top:0.3rem; font-size:0.82rem; color:var(--warm-gray-3);">${r.description}</p>` : ''}
             </div>
         </div>
     `).join('');

@@ -2,40 +2,54 @@
 {% block title %}Login — Pet Rescue{% endblock %}
 
 {% block content %}
-<div class="card" style="max-width:480px; margin:0 auto;">
-    <h2>Login</h2>
+<div class="auth-wrapper">
+<div class="auth-card">
+    <span class="auth-icon">🐾</span>
+    <h2>Welcome back</h2>
+    <p class="auth-sub">Login to your Pet Rescue account</p>
 
     <div class="alert alert-error" id="error-msg"></div>
 
     <div class="form-group">
-        <label>Email</label>
-        <input type="email" id="email" placeholder="Enter email">
+        <label>Email address</label>
+        <input type="email" id="email" placeholder="you@example.com" oninput="clearErr()">
     </div>
     <div class="form-group">
         <label>Password</label>
-        <input type="password" id="password" placeholder="Enter password">
+        <input type="password" id="password" placeholder="Enter your password"
+               oninput="clearErr()" onkeydown="if(event.key==='Enter') loginUser()">
     </div>
 
-    <button class="btn btn-primary" onclick="loginUser()" style="width:100%">Login</button>
+    <button class="btn btn-primary" onclick="loginUser()" style="width:100%; margin-top:0.5rem;">
+        Login →
+    </button>
 
-    <p style="margin-top:1rem; text-align:center;">
-        Don't have an account? <a href="/users/register/">Register</a>
-    </p>
+    <div class="auth-divider">Don't have an account? <a href="/users/register/" style="color:var(--primary); font-weight:500;">Register</a></div>
+</div>
 </div>
 {% endblock %}
 
 {% block extra_js %}
 <script>
+function clearErr() {
+    document.getElementById('error-msg').style.display = 'none';
+}
+
 async function loginUser() {
-    const data = {
-        email: document.getElementById('email').value,
-        password: document.getElementById('password').value,
-    };
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const errorEl = document.getElementById('error-msg');
+
+    if (!email || !password) {
+        errorEl.textContent = 'Please enter both email and password.';
+        errorEl.style.display = 'block';
+        return;
+    }
 
     const res = await fetch('/users/api/login/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ email, password })
     });
 
     const result = await res.json();
@@ -44,11 +58,10 @@ async function loginUser() {
         localStorage.setItem('access_token', result.access);
         localStorage.setItem('refresh_token', result.refresh);
         localStorage.setItem('user', JSON.stringify(result.user));
-        window.location.href = '/pets/list/';
+        window.location.replace('/pets/list/');
     } else {
-        const el = document.getElementById('error-msg');
-        el.textContent = result.error || 'Login failed';
-        el.style.display = 'block';
+        errorEl.textContent = result.error || 'Invalid credentials.';
+        errorEl.style.display = 'block';
     }
 }
 </script>

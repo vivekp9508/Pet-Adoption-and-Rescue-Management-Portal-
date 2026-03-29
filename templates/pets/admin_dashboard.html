@@ -3,23 +3,44 @@
 
 {% block content %}
 <div class="page-header">
-    <h2>🛠️ Admin Dashboard</h2>
-    <div style="display:flex; align-items:center; gap:1rem;">
-        <!-- Admin notification bell -->
-        <div class="notif-wrapper">
-            <a class="notif-bell" onclick="toggleAdminNotif()" style="background:var(--primary); padding:0.5rem 0.8rem; border-radius:25px; color:white; font-size:0.9rem; font-weight:600;">
-                🔔 Notifications <span id="admin-notif-count" style="background:#e74c3c; color:white; border-radius:50%; padding:0.1rem 0.4rem; font-size:0.75rem; margin-left:0.3rem; display:none;"></span>
-            </a>
-            <div class="notif-dropdown" id="admin-notif-dropdown" style="right:0;">
-                <div class="notif-dropdown-header">New Report Submissions</div>
-                <div id="admin-notif-list"><div class="notif-item">Loading...</div></div>
-            </div>
+    <div>
+        <h2 style="margin-bottom:0.2rem;">Admin Dashboard</h2>
+        <p style="color:var(--warm-gray-2); font-size:0.88rem;">Review and manage pet reports</p>
+    </div>
+    <div class="notif-wrapper">
+        <button class="btn btn-secondary" onclick="toggleAdminNotif()" style="position:relative;">
+            🔔 Notifications
+            <span id="admin-notif-count" style="display:none; background:var(--danger); color:white; border-radius:99px; padding:1px 7px; font-size:0.72rem; font-weight:600; margin-left:6px;"></span>
+        </button>
+        <div class="notif-dropdown" id="admin-notif-dropdown">
+            <div class="notif-dropdown-header">New Submissions</div>
+            <div id="admin-notif-list"><div class="notif-item">Loading...</div></div>
         </div>
     </div>
 </div>
 
+<!-- Metric cards -->
+<div class="metric-grid" id="metric-grid" style="display:none;">
+    <div class="metric-card">
+        <div class="metric-label">Pending</div>
+        <div class="metric-value" id="m-pending" style="color:var(--warning);">—</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Accepted</div>
+        <div class="metric-value" id="m-accepted" style="color:var(--success);">—</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Rejected</div>
+        <div class="metric-value" id="m-rejected" style="color:var(--danger);">—</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Total Reports</div>
+        <div class="metric-value" id="m-total" style="color:var(--dark);">—</div>
+    </div>
+</div>
+
 <div class="filter-bar">
-    <label style="font-weight:600; color:var(--text-light); font-size:0.88rem;">Filter by status:</label>
+    <span class="filter-label">Status:</span>
     <select id="filter-status" onchange="loadReports()">
         <option value="pending">Pending</option>
         <option value="accepted">Accepted</option>
@@ -38,11 +59,11 @@
                 <th>Submitted By</th>
                 <th>Date</th>
                 <th>Status</th>
-                <th>Actions</th>
+                <th>Action</th>
             </tr>
         </thead>
         <tbody id="reports-table">
-            <tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-light);">Loading...</td></tr>
+            <tr><td colspan="8" style="text-align:center; padding:2.5rem; color:var(--warm-gray-2);">Loading...</td></tr>
         </tbody>
     </table>
 </div>
@@ -50,7 +71,7 @@
 <!-- Modal -->
 <div class="modal-overlay" id="modal">
     <div class="modal-box">
-        <h3>📋 Review Report</h3>
+        <h3>Review Report</h3>
         <input type="hidden" id="modal-report-id">
         <div class="form-group">
             <label>Update Status</label>
@@ -60,11 +81,11 @@
             </select>
         </div>
         <div class="form-group">
-            <label>Admin Note (optional)</label>
+            <label>Admin note <span style="color:var(--warm-gray-3); font-weight:400;">(optional)</span></label>
             <textarea id="modal-note" rows="3" placeholder="Add a note for the user..."></textarea>
         </div>
-        <div style="display:flex; gap:1rem; margin-top:1rem">
-            <button class="btn btn-primary" onclick="submitStatus()">Update Status</button>
+        <div style="display:flex; gap:0.75rem; margin-top:1.25rem;">
+            <button class="btn btn-primary" onclick="submitStatus()" style="flex:1;">Update Status</button>
             <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
         </div>
     </div>
@@ -82,22 +103,41 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     loadReports();
     loadAdminNotifications();
+    loadMetrics();
 });
+
+async function loadMetrics() {
+    const token = getToken();
+    const statuses = ['pending', 'accepted', 'rejected'];
+    const counts = {};
+
+    await Promise.all(statuses.map(async s => {
+        const res = await fetch(`/pets/api/admin/reports/?status=${s}`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (res.ok) {
+            const data = await res.json();
+            counts[s] = data.length;
+        }
+    }));
+
+    document.getElementById('m-pending').textContent = counts.pending ?? '—';
+    document.getElementById('m-accepted').textContent = counts.accepted ?? '—';
+    document.getElementById('m-rejected').textContent = counts.rejected ?? '—';
+    document.getElementById('m-total').textContent = Object.values(counts).reduce((a,b) => a+b, 0);
+    document.getElementById('metric-grid').style.display = 'grid';
+}
 
 async function loadAdminNotifications() {
     let token = getToken();
     let res = await fetch('/pets/api/admin/notifications/', {
         headers: { 'Authorization': 'Bearer ' + token }
     });
-
     if (res.status === 401) {
         token = await refreshAccessToken();
         if (!token) return;
-        res = await fetch('/pets/api/admin/notifications/', {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
+        res = await fetch('/pets/api/admin/notifications/', { headers: { 'Authorization': 'Bearer ' + token } });
     }
-
     if (!res.ok) return;
     const data = await res.json();
 
@@ -112,7 +152,6 @@ async function loadAdminNotifications() {
         listEl.innerHTML = '<div class="notif-item">No new submissions.</div>';
         return;
     }
-
     listEl.innerHTML = data.notifications.slice(0, 8).map(n => `
         <div class="notif-item ${n.is_read ? '' : 'unread'}">
             ${n.message}
@@ -125,7 +164,6 @@ function toggleAdminNotif() {
     const dropdown = document.getElementById('admin-notif-dropdown');
     const isOpen = dropdown.style.display === 'block';
     dropdown.style.display = isOpen ? 'none' : 'block';
-
     if (!isOpen) {
         const token = getToken();
         fetch('/pets/api/admin/notifications/read/', {
@@ -140,7 +178,8 @@ function toggleAdminNotif() {
 document.addEventListener('click', function(e) {
     const wrapper = document.querySelector('.notif-wrapper');
     if (wrapper && !wrapper.contains(e.target)) {
-        document.getElementById('admin-notif-dropdown').style.display = 'none';
+        const dd = document.getElementById('admin-notif-dropdown');
+        if (dd) dd.style.display = 'none';
     }
 });
 
@@ -151,48 +190,42 @@ async function loadReports() {
     let res = await fetch(`/pets/api/admin/reports/?status=${status}`, {
         headers: { 'Authorization': 'Bearer ' + token }
     });
-
     if (res.status === 401) {
         token = await refreshAccessToken();
         if (!token) { window.location.replace('/pets/admin-login/'); return; }
-        res = await fetch(`/pets/api/admin/reports/?status=${status}`, {
-            headers: { 'Authorization': 'Bearer ' + token }
-        });
-    }
-
-    if (res.status === 403) {
-        document.getElementById('reports-table').innerHTML = '<tr><td colspan="8" style="text-align:center; color:#c0392b;">Access denied.</td></tr>';
-        return;
+        res = await fetch(`/pets/api/admin/reports/?status=${status}`, { headers: { 'Authorization': 'Bearer ' + token } });
     }
 
     const reports = await res.json();
     const tbody = document.getElementById('reports-table');
 
     if (!reports.length) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2rem; color:var(--text-light);">No ${status} reports found.</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding:2.5rem; color:var(--warm-gray-2);">No ${status} reports found.</td></tr>`;
         return;
     }
 
     tbody.innerHTML = reports.map(r => `
         <tr>
-            <td style="font-weight:600; color:var(--text-light);">#${r.id}</td>
+            <td style="color:var(--warm-gray-2); font-size:0.82rem; font-weight:600;">#${r.id}</td>
             <td><span class="badge badge-${r.report_type}">${r.report_type}</span></td>
             <td>
                 ${r.image_url
-                    ? `<img src="${r.image_url}" style="width:55px; height:55px; object-fit:cover; border-radius:8px; display:block; margin-bottom:0.3rem;">`
-                    : `<div style="width:55px; height:55px; background:var(--primary-light); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.5rem; margin-bottom:0.3rem;">🐾</div>`
+                    ? `<img src="${r.image_url}" style="width:52px; height:52px; object-fit:cover; border-radius:8px; display:block; margin-bottom:4px;">`
+                    : `<div style="width:52px; height:52px; background:var(--primary-xlight); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:1.3rem; margin-bottom:4px;">🐾</div>`
                 }
-                <strong>${r.pet_type}</strong> ${r.breed ? '· ' + r.breed : ''}<br>
-                <small style="color:var(--text-light);">${r.color}</small>
+                <span style="font-weight:500; font-size:0.88rem;">${r.pet_type}</span>
+                ${r.breed ? `<span style="color:var(--warm-gray-2); font-size:0.82rem;"> · ${r.breed}</span>` : ''}
+                <br><span style="font-size:0.78rem; color:var(--warm-gray-3);">${r.color}</span>
             </td>
-            <td>${r.location}</td>
-            <td style="font-size:0.85rem;">${r.user_email}</td>
-            <td style="font-size:0.82rem; color:var(--text-light);">${new Date(r.created_at).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</td>
+            <td style="font-size:0.88rem;">${r.location}</td>
+            <td style="font-size:0.83rem; color:var(--warm-gray-2);">${r.user_email}</td>
+            <td style="font-size:0.8rem; color:var(--warm-gray-3);">${new Date(r.created_at).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'})}</td>
             <td><span class="badge badge-${r.status}">${r.status}</span></td>
             <td>
                 ${r.status === 'pending'
-                    ? `<button class="btn btn-primary" style="padding:0.35rem 0.9rem; font-size:0.82rem;" onclick="openModal(${r.id})">Review</button>`
-                    : `<span style="color:var(--text-light); font-size:0.85rem;">Done</span>`}
+                    ? `<button class="btn btn-primary" style="padding:0.35rem 0.85rem; font-size:0.8rem;" onclick="openModal(${r.id})">Review</button>`
+                    : `<span style="color:var(--warm-gray-3); font-size:0.82rem;">Done</span>`
+                }
             </td>
         </tr>
     `).join('');
@@ -232,7 +265,11 @@ async function submitStatus() {
         });
     }
 
-    if (res.ok) { closeModal(); loadReports(); }
+    if (res.ok) {
+        closeModal();
+        loadReports();
+        loadMetrics();
+    }
 }
 </script>
 {% endblock %}
