@@ -73,10 +73,6 @@ def my_reports(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_matching_pets(request):
-    """
-    User enters their lost pet details,
-    system searches found reports for matches.
-    """
     pet_type = request.query_params.get('pet_type')
     color = request.query_params.get('color')
     location = request.query_params.get('location')
@@ -85,15 +81,18 @@ def search_matching_pets(request):
     if not pet_type:
         return Response({'error': 'pet_type is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Start with all accepted found reports
     qs = PetReport.objects.filter(status='accepted', report_type='found')
 
-    # Score-based matching
     results = []
     for report in qs:
         score = 0
+
+        # Match pet_type — also match if report pet_type is 'other' when searching 'other'
         if report.pet_type == pet_type:
             score += 40
+        elif pet_type == 'other' and report.pet_type not in ['dog', 'cat', 'bird']:
+            score += 40
+
         if color and color.lower() in report.color.lower():
             score += 25
         if location and location.lower() in report.location.lower():
@@ -101,17 +100,15 @@ def search_matching_pets(request):
         if breed and breed.lower() in (report.breed or '').lower():
             score += 15
 
-        if score >= 40:  # Must at least match pet type
+        if score >= 40:
             results.append((score, report))
 
-    # Sort by score descending
     results.sort(key=lambda x: x[0], reverse=True)
     sorted_reports = [r for _, r in results]
 
-    serializer = PetReportSerializer(sorted_reports, many=True, context={'request': request})
     return Response({
         'count': len(sorted_reports),
-        'results': serializer.data
+        'results': PetReportSerializer(sorted_reports, many=True, context={'request': request}).data
     })
 
 # Admin views
